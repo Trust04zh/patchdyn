@@ -139,23 +139,33 @@ if __name__ == '__main__':
 
     parser = argparse.ArgumentParser()
     action = parser.add_mutually_exclusive_group(required=True)
-    action.add_argument('--retrieve-interpreter', '--ri', action='store_true', dest='retrieve_interpreter', help='todo')
-    action.add_argument('--update-interpreter', '--ui', metavar='INTERPRETER', type=str, nargs=1, dest='update_interpreter', help='todo')
-    action.add_argument('--retrieve-needed', '--rn', action='store_true', dest='retrieve_needed', help='todo')
-    action.add_argument('--update-needed', '--un', metavar=('OLD_NEEDED', 'NEW_NEEDED'), type=str, nargs=2, dest='update_needed', help='todo')
-    action.add_argument('--create-needed', '--cn', metavar='NEEDED', type=str, nargs=1, dest='create_needed', help='todo')
-    action.add_argument('--delete-needed', '--dn', metavar='NEEDED', type=str, nargs=1, dest='delete_needed', help='todo')
-    action.add_argument('--retrieve-soname', '--rs', action='store_true', dest='retrieve_soname', help='todo')
-    action.add_argument('--update-soname', '--us', metavar='SONAME', type=str, nargs=1, dest='update_soname', help='todo')
-    action.add_argument('--retrieve-rpath', '--rrpath', action='store_true', dest='retrieve_rpath', help='todo')
-    action.add_argument('--update-rpath', '--urpath', metavar='RPATH', type=str, nargs=1, dest='update_rpath', help='todo')
-    action.add_argument('--retrieve-runpath', '--rr', action='store_true', dest='retrieve_runpath', help='todo')
-    action.add_argument('--update-runpath', '--ur', metavar='RUNPATH', type=str, nargs=1, dest='update_runpath', help='todo')
-    action.add_argument('--retrieve-no-default-lib', '--rndl', action='store_true', dest='retrieve_no_default_lib', help='todo')
-    action.add_argument('--set-no-default-lib', '--sndl', action='store_true', dest='set_no_default_lib', help='todo')
-    action.add_argument('--unset-no-default-lib', '--usndl', action='store_true', dest='unset_no_default_lib', help='todo')
-    parser.add_argument('input', metavar='FILENAME', type=str, help='todo')
-    parser.add_argument('-o', '--output', metavar='OUTPUT_FILENAME', type=str, dest='output', help='todo')
+    action.add_argument('--retrieve-interpreter', '--ri', action='store_true', dest='retrieve_interpreter')
+    action.add_argument('--update-interpreter', '--ui', metavar='INTERPRETER', type=str, nargs=1,
+                        dest='update_interpreter',
+                        help='update dynamic linker/loader (in .interp section)')
+    action.add_argument('--retrieve-needed', '--rn', action='store_true', dest='retrieve_needed')
+    action.add_argument('--update-needed', '--un', metavar=('OLD_NEEDED', 'NEW_NEEDED'), type=str, nargs=2,
+                        dest='update_needed',
+                        help='update shared object/library dependency (DT_NEEDED entry in .dynamic section)')
+    action.add_argument('--create-needed', '--cn', metavar='NEEDED', type=str, nargs=1, dest='create_needed')
+    action.add_argument('--delete-needed', '--dn', metavar='NEEDED', type=str, nargs=1, dest='delete_needed')
+    action.add_argument('--retrieve-soname', '--rs', action='store_true', dest='retrieve_soname')
+    action.add_argument('--update-soname', '--us', metavar='SONAME', type=str, nargs=1, dest='update_soname',
+                        help='update shared object/library name (DT_SONAME entry in .dynamic section)')
+    action.add_argument('--retrieve-rpath', '--rrpath', action='store_true', dest='retrieve_rpath')
+    action.add_argument('--update-rpath', '--urpath', metavar='RPATH', type=str, nargs=1, dest='update_rpath',
+                        help='update rpath (DT_RPATH entry in .dynamic section)')
+    action.add_argument('--retrieve-runpath', '--rr', action='store_true', dest='retrieve_runpath',)
+    action.add_argument('--update-runpath', '--ur', metavar='RUNPATH', type=str, nargs=1, dest='update_runpath',
+                        help='update runpath (DT_RUNPATH entry in .dynamic section)')
+    action.add_argument('--retrieve-no-default-lib', '--rndl', action='store_true', dest='retrieve_no_default_lib')
+    action.add_argument('--set-no-default-lib', '--sndl', action='store_true', dest='set_no_default_lib',
+                        help='set DT_FLAGS_1 (DF_1_NODEFLIB) in .dynamic section')
+    action.add_argument('--unset-no-default-lib', '--usndl', action='store_true', dest='unset_no_default_lib')
+    parser.add_argument('input', metavar='FILENAME', type=str,
+                        help='filename of the ELF file to be patched')
+    parser.add_argument('-o', '--output', metavar='OUTPUT_FILENAME', type=str, dest='output',
+                        help='filename of the patched ELF file, <input filename>.patched by default')
     args = parser.parse_args()
 
     binary: ELF.Binary = ELF.parse(args.input)
@@ -206,10 +216,9 @@ if __name__ == '__main__':
         print(e)
         sys.exit(1)
 
-    # updated = False  # FIXME: debug
     if updated:
         if args.output is None:
-            output_filename = args.input
+            output_filename = f'{args.input}.patched'
         else:
             output_filename = args.output
         builder = ELF.Builder(binary)
